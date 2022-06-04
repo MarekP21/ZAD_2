@@ -1,17 +1,24 @@
-# Najprostszy pliczek makefile kompilujący program Code2
+# Plik makefile rozbudowany o zmienne automatyczne i kilka innych rzeczy
 
-Code2: Code2.o libpole.a libobjetosc.so
-	gcc -o Code2 Code2.o libpole.a libobjetosc.so -Wl,-rpath,.
-Code2.o: Code2.c libpole.h libobjetosc.h
-	gcc -c Code2.c libpole.h libobjetosc.h
+CC = cc
+CFLAGS = -g
+AR = ar
+
+# Zmienna predefiniowana (P - skrot od program)
+P = Code2
+
+$(P): $(P).o libpole.a libobjetosc.so
+	$(CC) $(CFLAGS) -o $@ $^ -Wl,-rpath,.
+$(P).o: $(P).c libpole.h libobjetosc.h
+	$(CC) $(CFLAGS) -c $^
 libpole.a: pole.o
-	ar rs libpole.a pole.o
+	$(AR) rs $@ $<
 libobjetosc.so: objetosc.o
-	gcc -shared -o libobjetosc.so objetosc.o
+	$(CC) $(CFLAGS) -shared -o $@ $<
 pole.o: pole.c
-	gcc -c pole.c
+	$(CC) $(CFLAGS) -c $<
 objetosc.o: objetosc.c
-	gcc -c -fPIC objetosc.c
+	$(CC) $(CFLAGS) -c -fPIC $<
 	
 clean:
-	rm -f *.o *.a *.so *.gch Code2
+	rm -f *.o *.a *.so *.gch $(P)

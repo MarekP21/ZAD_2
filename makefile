@@ -1,4 +1,4 @@
-# Plik makefile rozbudowany o reguły przyrostków
+# Ostateczny plik makefile rozbudowany m.in o reguły wzorca
 
 CC = cc
 CFLAGS = -g
@@ -7,29 +7,42 @@ AR = ar
 # Zmienna predefiniowana (P - skrot od program)
 P = Code2
 
+all: $(P)
+
 # Wykorzystanie przyrostków
 .PHONY: clean
 .SUFIXES: .c .o .a .so .h
 
-# Uzycie -fPIC do dwóch bibliotek ze wzgledu na ogólność regół przyrostków
-# Zostanie to poprawione w regule wzorca
-
-.c.o:
-	$(CC) $(CFLAGS) -c -fPIC $^ 
-
-.o:
+# Reguły wzorca
+# Dla utowrzenia programu wynikowego
+%: %.o
 	$(CC) $(CFLAGS) -o $@ $^ -Wl,-rpath,.
 
-$(P): $(P).o libpole.a libobjetosc.so
-$(P).o: $(P).c libpole.h libobjetosc.h
-pole.o: pole.c
-objetosc.o: objetosc.c
+# Dla stworzenia pliku obiektowego dla biblioteki statycznej oraz Code2.o
+%1.o: %.c
+	$(CC) $(CFLAGS) -c $^
 
-# próba zbudowania reguly przyrostkow dla ponizszych polecen nie powiedzie sie
-libpole.a: pole.o
+# Dla utworzenia pliku obiektowego dla biblioteki dynamicznej
+%2.o: %.c
+	$(CC) $(CFLAGS) -c -fPIC $^
+
+# Dla utworzenia biblioteki statycznej
+lib%.a: %.o
 	$(AR) rs $@ $<
-libobjetosc.so: objetosc.o
+
+# Dla utworzenia biblioteki dynamicznej
+lib%.so: %.o
 	$(CC) $(CFLAGS) -shared -o $@ $<
-	
+
+$(P): $(P).o libpole.a libobjetosc.so
+$(P)1.o: $(P).c libpole.h libobjetosc.h
+libpole.a: pole.o
+libobjetosc.so: objetosc.o
+pole1.o: pole.c
+objetosc2.o: objetosc.c
+
+# Czyszczenie po budowaniu pliku
 clean:
-	rm -f *.o *.a *.so *.gch $(P)
+	rm -f *.o *.a *.so $(P)
+
+# Koniec pliku makefile
